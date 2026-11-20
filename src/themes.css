@@ -1,0 +1,11 @@
+/*
+ * Theme overrides, applied via <html data-theme="<id>">.
+ *
+ * Signoff has one theme, "ledger", and its values are the @theme defaults in
+ * styles.css, so this block only has to declare the colour scheme. A second
+ * theme would be another [data-theme] block here that overrides those tokens.
+ */
+
+[data-theme="ledger"] {
+  color-scheme: light;
+}

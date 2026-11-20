@@ -1,0 +1,195 @@
+[
+  {
+    "claim": "All 152 unit tests pass.",
+    "check": "Run `npm run test:unit`. The summary must read: Test Files 11 passed (11), Tests 152 passed (152).",
+    "stakes": "medium",
+    "ref": "src/**/*.test.ts"
+  },
+  {
+    "claim": "The type check and the linter report nothing.",
+    "check": "Run `npm run type-check` and then `npm run lint`. Both must print no errors and exit with status 0.",
+    "stakes": "low",
+    "ref": "tsconfig.json, eslint.config.js"
+  },
+  {
+    "claim": "The production build succeeds and prerenders the landing page.",
+    "check": "Run `npm run build`. It must finish with a line that starts `[prerender] wrote 1 page(s)`.",
+    "stakes": "medium",
+    "ref": "vite.config.ts, prerender.ts"
+  },
+  {
+    "claim": "A coding agent gets exactly three tools: file_claim, list_claims and list_ledgers. None of them records a verdict.",
+    "check": "Run `npx deepspace agent tools signoff` and read the tool names. Then read src/ai/tools.ts from top to bottom and confirm that nothing in it can create a verdict.",
+    "stakes": "high",
+    "ref": "src/ai/tools.ts"
+  },
+  {
+    "claim": "An agent-scoped token cannot record a verdict: the recordVerdict action answers 401 to it, and asking the agent door for a verdict tool answers 404.",
+    "check": "Run `npx deepspace test run tests/ledger.spec.ts`. The test 'an agent token can file a claim and read it back, and cannot sign or delete' must pass. If it is skipped, this is still unchecked against real tokens: I could only test it with tokens I signed myself in a sandbox.",
+    "stakes": "high",
+    "ref": "tests/ledger.spec.ts, src/server/action-routes.ts"
+  },
+  {
+    "claim": "A person's session token is refused at the agent's door with 401, so a browser cannot file a claim that is labelled as an agent's.",
+    "check": "In tests/ledger.spec.ts, the test 'a person's session token is refused at the agent's door' must pass. Also read src/ai/agent.ts: the only access check is resolveAgentAuth.",
+    "stakes": "high",
+    "ref": "src/ai/agent.ts"
+  },
+  {
+    "claim": "No browser can create, change or delete a claim, a verdict or a ledger by talking to the record room directly, not even the ledger's keeper.",
+    "check": "In tests/ledger.spec.ts, the test 'even the keeper cannot write, change or delete a claim or a verdict except through the server' must pass. Then read src/schemas/ledger-schemas.ts: create, update and delete are false for every role.",
+    "stakes": "high",
+    "ref": "src/schemas/ledger-schemas.ts"
+  },
+  {
+    "claim": "What a claim or a verdict says cannot be changed after it is written, even by server code: the record room refuses any change to an immutable column.",
+    "check": "Read the immutable flags in src/schemas/ledger-schemas.ts. To repeat my test, add a throwaway action in local dev that calls tools.update('claims', id, { statement: 'x' }) and call it: the result must say 'Cannot modify immutable field'. I did this for 13 fields in a sandbox and removed the action.",
+    "stakes": "high",
+    "ref": "src/schemas/ledger-schemas.ts, src/server/ledger-service.test.ts"
+  },
+  {
+    "claim": "The only way anything is removed is the keeper deleting a whole ledger. It takes that ledger's claims and verdicts with it, touches no other ledger, and an agent has no way to do it.",
+    "check": "In src/server/ledger-service.test.ts, the deleteLedger tests must pass. In tests/ledger.spec.ts, the keeper test ends by deleting its ledger in the browser. By hand: create a spare ledger with one claim, delete it, and confirm your other ledgers still show their claims.",
+    "stakes": "high",
+    "ref": "src/server/ledger-service.ts"
+  },
+  {
+    "claim": "A ledger is private until its keeper publishes it. Another signed-in person and a signed-out visitor both get the page 'No ledger to show here' and receive none of its rows.",
+    "check": "In tests/ledger.spec.ts, the test 'a ledger is private until its keeper publishes it, and read-only for everyone else' must pass. By hand: open a private ledger's link in a private browser window.",
+    "stakes": "high",
+    "ref": "src/schemas/ledger-schemas.ts, src/hooks/useLedger.ts"
+  },
+  {
+    "claim": "Making a public ledger private takes it away from pages that already have it open, without a reload.",
+    "check": "The same test covers it. By hand: publish a ledger, open its link in a private window, click Make private in the first window, and watch the second window change within a few seconds.",
+    "stakes": "medium",
+    "ref": "src/server/ledger-service.ts"
+  },
+  {
+    "claim": "With their own valid session, another person cannot rule on, add to or publish a ledger they do not keep. They get the same 'not found' answer as for an id that does not exist.",
+    "check": "In tests/ledger.spec.ts, the test 'another person's session token opens nothing in a ledger they do not keep' must pass. The same rules are unit tested in src/server/ledger-service.test.ts.",
+    "stakes": "high",
+    "ref": "src/server/ledger-service.ts"
+  },
+  {
+    "claim": "Nobody can call a paid integration through this app. The scaffold's proxy would bill the app owner for any signed-in person's calls; it now answers 404 for every integration.",
+    "check": "Signed in on the live site, run this in the browser console: fetch('/api/integrations/openai/chat-completion', { method: 'POST' }).then((r) => console.log(r.status)). It must print 404. Then read src/integrations.ts: the list is empty.",
+    "stakes": "high",
+    "ref": "src/server/http-routes.ts, src/integrations.ts"
+  },
+  {
+    "claim": "A signed-in person is not told who else uses the app: the user roster they receive contains only themselves.",
+    "check": "In tests/ledger.spec.ts, the test 'a signed-in person is not told who else uses the app' must pass. Without the roster setting in src/schemas/users-schema.ts the same test received every registered user.",
+    "stakes": "medium",
+    "ref": "src/schemas/users-schema.ts"
+  },
+  {
+    "claim": "Only the app's own record room answers under /ws/. The scaffold's routes to Yjs, canvas, presence, cron and job rooms are not registered.",
+    "check": "Run `npx deepspace test run api`. The test 'only the app record room answers under /ws/' must pass. Then read src/server/realtime-routes.ts, which is short.",
+    "stakes": "medium",
+    "ref": "src/server/realtime-routes.ts"
+  },
+  {
+    "claim": "The app makes no model calls. The scaffold's in-app chat routes are deleted and no integration is listed.",
+    "check": "Run `ls src/ai`: it must show agent.ts, tools.ts and tools.test.ts only. Run `grep -rn \"integration(\" src worker.ts`: it must find nothing.",
+    "stakes": "low",
+    "ref": "src/ai"
+  },
+  {
+    "claim": "Text that looks like a credential is refused in a claim, a check, a reference and a verdict note. The screen is a list of known patterns, so an unfamiliar format would get through.",
+    "check": "Run `npm run test:unit` and read the findLikelySecret tests in src/lib/validation.test.ts. By hand: add a claim whose text contains the letters AKIA followed by 16 capital letters. It must be refused.",
+    "stakes": "medium",
+    "ref": "src/lib/validation.ts"
+  },
+  {
+    "claim": "The limits hold in the service: 20 ledgers per person, 500 claims per ledger and 20 verdicts per claim. I tested the first two with an in-memory stand-in for the record room, not against the real one at those sizes.",
+    "check": "In src/server/ledger-service.test.ts, the tests 'stops at the ledger limit', 'stops when the ledger is full' and 'stops at the verdict limit for one claim, and only for that claim' must pass. Read LIMITS in src/lib/ledger.ts.",
+    "stakes": "low",
+    "ref": "src/lib/ledger.ts"
+  },
+  {
+    "claim": "The landing page is prerendered and static: loading it makes no auth request and opens no socket.",
+    "check": "Run `npx deepspace test run smoke`. The test 'static contract: landing fires no auth request, opens no websocket' must pass. On the live site, View Source on the home page must contain the headline text.",
+    "stakes": "low",
+    "ref": "src/pages/index.tsx"
+  },
+  {
+    "claim": "The Markdown export lists every claim under its current status and gives the same counts as the page.",
+    "check": "Open Export on this ledger. Compare the sentence at the top of the export with the tally above the claims, then spot-check two claims.",
+    "stakes": "low",
+    "ref": "src/lib/export.ts"
+  },
+  {
+    "claim": "The ledger page is usable at phone width: the two columns stack and every action is still reachable.",
+    "check": "Open this ledger on a phone, or narrow the browser window below about 830 pixels. Record a verdict from there.",
+    "stakes": "low",
+    "ref": "src/styles.css"
+  },
+  {
+    "claim": "The tally says whether the high-stakes claims were checked, on the page and in the export, so a high percentage cannot hide an unchecked claim that matters.",
+    "check": "Add a claim by hand with 'How bad if it is false' set to High. The sentence above the claims must end 'The 1 high-stakes claim has not been checked.' Mark it verified or wrong and the ending must change to 'has been checked.' Open Export: the first paragraph must end with the same sentence.",
+    "stakes": "low",
+    "ref": "src/lib/ledger.ts, src/components/ledger/Tally.tsx"
+  },
+  {
+    "claim": "An agent can file its fix as a follow-up to a claim a person marked wrong. The wrong claim stays wrong, the fix waits for its own verdict, and each row links to the other.",
+    "check": "Run `npx deepspace test run tests/ledger.spec.ts`. The test 'an agent files its fix as a follow-up to the claim a person marked wrong' must pass. If it is skipped, do it by hand in a spare ledger with the commands under 'Checking the agent's door by hand' in the README: the new row must read 'Follows No. 1, marked wrong' and the old one 'Followed by No. 2', still struck through.",
+    "stakes": "medium",
+    "ref": "src/server/ledger-service.ts, src/lib/ledger.ts, tests/ledger.spec.ts"
+  },
+  {
+    "claim": "A follow-up can only point at a claim in the same ledger, kept by the same person. A made-up id and a real claim in another ledger get the same refusal, so the link cannot be used to find out what exists elsewhere.",
+    "check": "In src/server/ledger-service.test.ts, the test 'refuses to follow a claim that is missing, in another ledger, or someone else's, with one answer' must pass. By hand: file a claim with `follows` set to `nope`. It must be refused with a message that starts 'follows must be the id of an earlier claim in the same ledger'.",
+    "stakes": "medium",
+    "ref": "src/server/ledger-service.ts"
+  },
+  {
+    "claim": "list_claims tells an agent which wrong claims already have a fix on file, and how that fix stands, so it does not answer the same claim twice.",
+    "check": "In src/server/ledger-service.test.ts, the test 'tells an agent which wrong claims already have a fix on file, and how the fix stands' must pass. By hand, after filing a follow-up: run list_claims with status \"wrong\" again. The old claim must now carry followedBy with the new claim's id and the status new.",
+    "stakes": "low",
+    "ref": "src/server/ledger-service.ts, src/ai/tools.ts"
+  },
+  {
+    "claim": "The exported summary quoted on the landing page is produced by the export function from the example rows above it, not typed by hand, so the page cannot show a summary the app would not write.",
+    "check": "Read EXAMPLE_SUMMARY at the end of src/components/ledger/example.ts: it calls ledgerToMarkdown. On the landing page, the block under 'The summary you hand over' must list claim No. 2 under '## Wrong (1)' with the line 'Followed by No. 3.'",
+    "stakes": "low",
+    "ref": "src/components/ledger/example.ts, src/pages/index.tsx"
+  },
+  {
+    "claim": "The export gathers the follow-ups in one section, right after what was found wrong: which claim follows which, where both stand, and which claims marked wrong have no follow-up at all.",
+    "check": "In src/lib/export.test.ts, the test 'gathers the follow-ups in one place, with where both claims stand' must pass. By hand: open Export on a ledger that has a follow-up. The section '## Follow-ups' must come after '## Wrong' and hold a line like 'No. 2 follows No. 1, marked wrong. No. 2 is still waiting.'",
+    "stakes": "low",
+    "ref": "src/lib/export.ts"
+  },
+  {
+    "claim": "The example ledger on the landing page prints fixed dates in UTC, never a time ago, so it reads the same on any day and in any time zone and cannot look recent or stale.",
+    "check": "Open the landing page. The three example rows must say 'Filed by coding-agent on 16 Nov 2026.' and nothing on the page may say 'min ago'. In src/components/ledger/example.test.ts, the test 'is printed with fixed dates, never as a time ago, so it cannot look recent or stale' must pass.",
+    "stakes": "low",
+    "ref": "src/components/ledger/ExampleSheet.tsx, src/lib/time.ts"
+  },
+  {
+    "claim": "The two suites that need no account can be run against the deployed app. I could not run them there: my sandbox cannot reach it. Locally, 13 of the 15 pass and the other two need the real auth service.",
+    "check": "Run `npx playwright test -c tests/live.config.ts`. All 15 tests must pass against https://signoff.app.space: both doors refuse a missing or made-up token, no integration can be called, and only the app's record room answers under /ws/.",
+    "stakes": "high",
+    "ref": "tests/live.config.ts, tests/api.spec.ts, tests/smoke.spec.ts"
+  },
+  {
+    "claim": "scripts/record-build-ledger.mjs records the published build ledger from the clipboard: after Copy link it sets the landing page's link and the README's, and it refuses clipboard text that is neither a ledger link nor an exported summary.",
+    "check": "On the published ledger click Copy link, run `pbpaste | node scripts/record-build-ledger.mjs`, then `git diff`: src/showcase.ts and README.md must carry this ledger's address and nothing else may change. Copy any other text and run it again: it must refuse and change nothing.",
+    "stakes": "low",
+    "ref": "scripts/record-build-ledger.mjs"
+  },
+  {
+    "claim": "Fixed: scripts/record-build-ledger.mjs no longer crashes on macOS when the clipboard is piped in. It reads the pipe as a stream instead of all at once, and with nothing piped in it reads the clipboard itself.",
+    "check": "On the published ledger click Copy link, then run `pbpaste | node scripts/record-build-ledger.mjs`. It must print 'Linked https://signoff.app.space/l/...' with no EAGAIN error, and `git diff` must show this ledger's address in src/showcase.ts and README.md.",
+    "stakes": "low",
+    "ref": "scripts/record-build-ledger.mjs",
+    "followsClaim": "scripts/record-build-ledger.mjs records the published build ledger from the clipboard: after Copy link it sets the landing page's link and the README's, and it refuses clipboard text that is neither a ledger link nor an exported summary."
+  },
+  {
+    "claim": "Assumption: real DeepSpace tokens and a real deploy behave like my sandbox. I never ran this app against the real auth service. Every check above was run on the local worker with tokens signed by a throwaway key.",
+    "check": "Run `npx deepspace test run all` with two test accounts: every test must pass. Then on the live URL: sign in, create a ledger, file a claim with `npx deepspace agent invoke`, watch it arrive without a reload, and mark it.",
+    "stakes": "high",
+    "ref": "README.md"
+  }
+]

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!--
+  Signoff has one theme, "ledger". Its colours live in src/styles.css (@theme).
+-->
+<html lang="en" data-theme="ledger">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Signoff</title>
+    <!--
+      First-paint background, so the page is paper-coloured before the CSS
+      bundle arrives. Mirrors --color-background in src/styles.css.
+    -->
+    <style>
+      html { background-color: #eef4ea; color-scheme: light; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

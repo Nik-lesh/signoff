@@ -1,0 +1,317 @@
+@import "tailwindcss" source(none);
+@import "./themes.css";
+
+/*
+ * Typefaces, bundled with the app (no third-party font requests).
+ * Each one is a voice, and the roles never mix:
+ *   Public Sans      the form itself: navigation, labels, buttons
+ *   Monaspace Neon   the agent: claims, commands, anything a machine typed
+ *   Monaspace Radon  the person: verdict notes and signatures
+ */
+@import "@fontsource-variable/public-sans/wght.css";
+@import "@fontsource/monaspace-neon/latin-400.css";
+@import "@fontsource/monaspace-neon/latin-500.css";
+@import "@fontsource/monaspace-radon/latin-400.css";
+@import "@fontsource/monaspace-radon/latin-500.css";
+
+/* Scan local source + SDK components for Tailwind class usage */
+@source "./**/*.{ts,tsx}";
+@source "../node_modules/deepspace/dist/**/*.js";
+
+/*
+ * Theming — pure shadcn/ui CSS variables with [data-theme] selectors.
+ *
+ * The @theme block below holds the default theme (slate). All other themes
+ * live in `themes.css` as `[data-theme="<id>"]` override blocks. Switching
+ * themes = changing the data-theme attribute on <html> in index.html. No
+ * JS, no FOUC.
+ *
+ * Status colors (success, warning, info) are intentionally NOT themed —
+ * they stay consistent across every preset.
+ */
+@theme {
+  /*
+   * Ledger: Signoff's one theme. The palette is the paper ledger it is named
+   * after: eye-ease green columnar paper, graphite print, blue ink for a
+   * person's signature, and a red pen for corrections.
+   */
+  --color-background: #eef4ea; /* paper */
+  --color-foreground: #1f2523; /* print */
+  --color-card: #f8fbf5; /* sheet */
+  --color-card-foreground: #1f2523;
+  --color-popover: #fbfdf9;
+  --color-popover-foreground: #1f2523;
+  --color-primary: #1b3fa0; /* ink */
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #e2ebdc;
+  --color-secondary-foreground: #1f2523;
+  --color-muted: #e6eee1;
+  --color-muted-foreground: #5a665e; /* pencil */
+  --color-accent: #dde8d6;
+  --color-accent-foreground: #1f2523;
+  --color-destructive: #b3212a; /* red pen */
+  --color-destructive-foreground: #ffffff;
+  --color-border: #c3d2bc; /* rule */
+  --color-input: #a9bda1;
+  --color-ring: #1b3fa0;
+  --radius: 0.25rem;
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  /* Named for what they are in the ledger, so the markup reads like the page. */
+  --color-paper: #eef4ea;
+  --color-sheet: #f8fbf5;
+  --color-rule: #c3d2bc;
+  --color-print: #1f2523;
+  --color-pencil: #5a665e;
+  --color-ink: #1b3fa0;
+  --color-redpen: #b3212a;
+  /* The double rule between what the agent claimed and what a person checked. */
+  --color-divide: #cf7b82;
+
+  /* Toasts and the kit's status variants, kept inside the palette. */
+  --color-success: #1b3fa0;
+  --color-success-foreground: #ffffff;
+  --color-warning: #8a6410;
+  --color-warning-foreground: #ffffff;
+  --color-info: #1b3fa0;
+  --color-info-foreground: #ffffff;
+
+  --font-form: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-agent: 'Monaspace Neon', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-person: 'Monaspace Radon', 'Monaspace Neon', ui-monospace, monospace;
+
+  --shadow-card: 0 0 0 0 transparent;
+  --shadow-card-hover: 0 0 0 0 transparent;
+
+  --color-shell: #eef4ea;
+  --color-shell-panel: #f8fbf5;
+}
+
+/* Theme override blocks live in `themes.css` — imported above. */
+
+/*
+ * Animation keyframes for shadcn components.
+ * These replace the tailwindcss-animate plugin which is not compatible with Tailwind v4.
+ */
+@keyframes animate-in {
+  from { opacity: var(--tw-enter-opacity, 1); transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0)); }
+}
+
+@keyframes animate-out {
+  to { opacity: var(--tw-exit-opacity, 1); transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0)); }
+}
+
+@utility animate-in {
+  animation-name: animate-in;
+  animation-duration: 150ms;
+  /* `both` prevents a one-frame flash before entry / after exit. */
+  animation-fill-mode: both;
+  --tw-enter-opacity: initial;
+  --tw-enter-scale: initial;
+  --tw-enter-translate-x: initial;
+  --tw-enter-translate-y: initial;
+  --tw-enter-rotate: initial;
+}
+
+@utility animate-out {
+  animation-name: animate-out;
+  animation-duration: 150ms;
+  /* `both` prevents a one-frame flash before entry / after exit. */
+  animation-fill-mode: both;
+  --tw-exit-opacity: initial;
+  --tw-exit-scale: initial;
+  --tw-exit-translate-x: initial;
+  --tw-exit-translate-y: initial;
+  --tw-exit-rotate: initial;
+}
+
+@utility fade-in-0 { --tw-enter-opacity: 0; }
+@utility fade-out-0 { --tw-exit-opacity: 0; }
+@utility zoom-in-95 { --tw-enter-scale: .95; }
+@utility zoom-out-95 { --tw-exit-scale: .95; }
+@utility slide-in-from-top-2 { --tw-enter-translate-y: -0.5rem; }
+@utility slide-in-from-bottom-2 { --tw-enter-translate-y: 0.5rem; }
+@utility slide-in-from-left-2 { --tw-enter-translate-x: -0.5rem; }
+@utility slide-in-from-right-2 { --tw-enter-translate-x: 0.5rem; }
+@utility slide-out-to-top-2 { --tw-exit-translate-y: -0.5rem; }
+@utility slide-out-to-bottom-2 { --tw-exit-translate-y: 0.5rem; }
+@utility slide-out-to-left-2 { --tw-exit-translate-x: -0.5rem; }
+@utility slide-out-to-right-2 { --tw-exit-translate-x: 0.5rem; }
+
+
+/*
+ * Custom base styles — must be in @layer base so utility classes can override.
+ */
+@layer base {
+  html {
+    /* Signoff is a light, paper-coloured app. */
+    color-scheme: light;
+  }
+
+  html, body, #root {
+    min-height: 100vh;
+    background-color: var(--color-background);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-form);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 15px;
+    color: var(--color-foreground);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 0.25rem;
+    background-color: var(--color-border);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted-foreground);
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+
+  /*
+   * Focus indication is intentionally NOT applied app-wide via a
+   * `*:focus-visible` rule. Doing so paints a colored outline onto
+   * every focusable element on the page — including programmatically
+   * focusable containers like Radix DismissableLayer wrappers,
+   * dialog overlays, and any element with `tabindex={-1}` used for
+   * scroll containment. The result reads as "the entire panel /
+   * dialog is selected" the moment a child button is clicked.
+   *
+   * Per-component focus indicators (e.g. shadcn's
+   * `focus-visible:ring-1` on Button, `focus-visible:border-ring` on
+   * Input / Textarea / Select) are sufficient for keyboard
+   * accessibility and don't bleed onto containers.
+   *
+   * If you DO need a global indicator for very keyboard-heavy apps,
+   * scope it tightly — e.g. only to interactive elements:
+   *
+   *   a:focus-visible,
+   *   button:focus-visible,
+   *   [role="button"]:focus-visible,
+   *   input:focus-visible,
+   *   select:focus-visible,
+   *   textarea:focus-visible {
+   *     outline: 2px solid var(--color-primary);
+   *     outline-offset: 2px;
+   *   }
+   *
+   * — never `*`.
+   */
+
+  /* Prevent 300ms tap delay on mobile */
+  a, button, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+  }
+}
+
+/*
+ * Signoff's own pieces. Kept here, not in component files, so the ledger's
+ * few custom rules are in one place.
+ */
+@layer components {
+  /* A row of the ledger: the claim on the left, the sign-off on the right. */
+  .ledger-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  /* The double rule. It sits above the sign-off on a phone and beside it on a desk. */
+  .ledger-signoff {
+    border-top: 3px double var(--color-divide);
+  }
+
+  @media (min-width: 52rem) {
+    .ledger-row {
+      grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+    }
+
+    .ledger-signoff {
+      border-top: 0;
+      border-left: 3px double var(--color-divide);
+    }
+  }
+
+  /* A claim a person found to be wrong is struck through in red pen, still readable. */
+  .claim-struck {
+    text-decoration-line: line-through;
+    text-decoration-color: var(--color-redpen);
+    text-decoration-thickness: 2px;
+  }
+
+  /* The blank line a signature goes on. */
+  .signature-line {
+    border-bottom: 1px solid var(--color-print);
+    min-height: 1.75rem;
+  }
+
+  /* A claim that has just arrived over the wire is marked once, then settles. */
+  .claim-arrived {
+    animation: claim-arrived 2.4s ease-out 1;
+  }
+}
+
+/*
+ * The landing page's one piece of motion: the first signature on the example
+ * sheet is written onto its line, once. CSS only, so the prerendered HTML is
+ * complete without JavaScript.
+ */
+.landing-hero article:first-of-type [data-testid='signoff-mark'] .signature-line > span {
+  animation: signature-written 1.1s cubic-bezier(0.3, 0, 0.2, 1) 0.7s both;
+}
+
+@keyframes signature-written {
+  from {
+    clip-path: inset(-0.2em 100% -0.2em 0);
+  }
+
+  to {
+    clip-path: inset(-0.2em 0 -0.2em 0);
+  }
+}
+
+@keyframes claim-arrived {
+  from {
+    background-color: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claim-arrived,
+  .landing-hero article:first-of-type [data-testid='signoff-mark'] .signature-line > span {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
